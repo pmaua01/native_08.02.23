@@ -55,7 +55,6 @@ export const RegistrationScreen = ({ navigation }) => {
   };
 
   const onLogin = async () => {
-    await uploadFoto();
     await dispatch(authOnRegister(state));
     setState(initialState);
   };
@@ -77,17 +76,20 @@ export const RegistrationScreen = ({ navigation }) => {
   // take photo for avatar
 
   const uploadFoto = async () => {
-    const response = await fetch(photo);
-    const file = await response.blob();
-    const id = Date.now().toString();
-    const storageRef = ref(storage, `avatarImage/${id}`);
-    await uploadBytes(storageRef, file);
-    const downloadFoto = await getDownloadURL(storageRef);
-    console.log("downloadFoto", downloadFoto);
-    setState((prevState) => ({
-      ...prevState,
-      avatar: downloadFoto,
-    }));
+    try {
+      const response = await fetch(photo);
+      const file = await response.blob();
+      const id = Date.now().toString();
+      const storageRef = ref(storage, `avatarImage/${id}`);
+      await uploadBytes(storageRef, file);
+      const downloadFoto = await getDownloadURL(storageRef);
+      setState((prevState) => ({
+        ...prevState,
+        avatar: downloadFoto,
+      }));
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const takePhoto = async () => {
@@ -99,7 +101,8 @@ export const RegistrationScreen = ({ navigation }) => {
     try {
       const photo = await camera.takePictureAsync();
       console.log("Photo on register screen", photo);
-      setPhoto(photo.uri);
+      await setPhoto(photo.uri);
+      uploadFoto();
     } catch (error) {
       console.log("error", error);
     }
