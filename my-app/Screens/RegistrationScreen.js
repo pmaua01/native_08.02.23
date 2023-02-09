@@ -28,6 +28,8 @@ import { authOnRegister } from "../redux/auth/authOperations";
 // icon
 import Addphoto from "../images/Addphoto.svg";
 
+import * as ImagePicker from "expo-image-picker";
+
 const initialState = {
   login: "",
   email: "",
@@ -47,16 +49,13 @@ export const RegistrationScreen = ({ navigation }) => {
 
   const [permission, requestPermission] = Camera.useCameraPermissions();
 
+  const [download, setDownload] = useState("1");
+
   const dispatch = useDispatch();
 
   const keyboardHideOutInput = () => {
     Keyboard.dismiss();
     setIsShowKeyboard(false);
-  };
-
-  const onLogin = async () => {
-    await dispatch(authOnRegister(state));
-    setState(initialState);
   };
 
   useEffect(() => {
@@ -83,28 +82,72 @@ export const RegistrationScreen = ({ navigation }) => {
       const storageRef = ref(storage, `avatarImage/${id}`);
       await uploadBytes(storageRef, file);
       const downloadFoto = await getDownloadURL(storageRef);
-      setState((prevState) => ({
-        ...prevState,
-        avatar: downloadFoto,
-      }));
+      console.log("downloadFoto", downloadFoto);
+
+      // setState((prevState) => ({
+      //   ...prevState,
+      //   avatar: downloadFoto,
+      // }));
+
+      return downloadFoto;
     } catch (error) {
       console.log(error);
     }
   };
 
+  const onLogin = async () => {
+    const upload = await uploadFoto();
+    console.log("upload", upload);
+    console.log("prevstate", state);
+    setState((prevState) => ({
+      ...prevState,
+      avatar: upload,
+    }));
+    await dispatch(authOnRegister(state));
+
+    await setState(initialState);
+
+    console.log("afterstate", state);
+  };
+
+  // const takePhoto = async () => {
+  //   requestPermission();
+  //   console.log(permission);
+  //   if (!permission.granted) {
+  //     error("Not Permission");
+  //   }
+  //   try {
+  //     const photo = await camera.takePictureAsync();
+  //     console.log("Photo on register screen", photo);
+  //     await setPhoto(photo.uri);
+  //     console.log("photo.uri takephoto", photo.uri);
+  //     await uploadFoto();
+  //     console.log("state in takephoto", state);
+  //   } catch (error) {
+  //     console.log("error", error);
+  //   }
+  // };
+
   const takePhoto = async () => {
-    requestPermission();
-    console.log(permission);
-    if (!permission.granted) {
-      error("Not Permission");
+    const permissionResult = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (permissionResult.granted === false) {
+      alert("You've refused to allow this appp to access your camera!");
+      return;
     }
-    try {
-      const photo = await camera.takePictureAsync();
-      console.log("Photo on register screen", photo);
-      await setPhoto(photo.uri);
-      uploadFoto();
-    } catch (error) {
-      console.log("error", error);
+
+    const result = await ImagePicker.launchCameraAsync();
+
+    console.log("result.canceled", result.canceled);
+
+    if (!result.canceled) {
+      console.log("result if canceled", result);
+      result.assets.map((r) => {
+        console.log(r.uri);
+        console.log("photo state before", photo);
+        setPhoto(r.uri);
+        console.log("photo state after", photo);
+      });
     }
   };
 
