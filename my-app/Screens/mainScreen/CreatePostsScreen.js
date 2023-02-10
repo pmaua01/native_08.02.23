@@ -61,6 +61,15 @@ const CreatePostsScreen = ({ navigation }) => {
   };
 
   useEffect(() => {
+    async () => {
+      requestPermission();
+      console.log(permission);
+      if (!permission.granted) {
+        error("Not Permission");
+      }
+    };
+  }, []);
+  useEffect(() => {
     const show = Keyboard.addListener("keyboardDidShow", () =>
       setIsShowKeyboard(true)
     );
@@ -76,11 +85,6 @@ const CreatePostsScreen = ({ navigation }) => {
   const { userId, nickname } = useSelector((state) => state.auth);
 
   const takePhoto = async () => {
-    requestPermission();
-    console.log(permission);
-    if (!permission.granted) {
-      error("Not Permission");
-    }
     const photo = await camera.takePictureAsync();
     const locationGps = await Location.getCurrentPositionAsync();
     setPosition(locationGps);

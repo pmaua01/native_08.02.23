@@ -74,42 +74,6 @@ export const RegistrationScreen = ({ navigation }) => {
 
   // take photo for avatar
 
-  const uploadFoto = async () => {
-    try {
-      const response = await fetch(photo);
-      const file = await response.blob();
-      const id = Date.now().toString();
-      const storageRef = ref(storage, `avatarImage/${id}`);
-      await uploadBytes(storageRef, file);
-      const downloadFoto = await getDownloadURL(storageRef);
-      console.log("downloadFoto", downloadFoto);
-
-      // setState((prevState) => ({
-      //   ...prevState,
-      //   avatar: downloadFoto,
-      // }));
-
-      return downloadFoto;
-    } catch (error) {
-      console.log(error);
-    }
-  };
-
-  const onLogin = async () => {
-    const upload = await uploadFoto();
-    console.log("upload", upload);
-    console.log("prevstate", state);
-    setState((prevState) => ({
-      ...prevState,
-      avatar: upload,
-    }));
-    await dispatch(authOnRegister(state));
-
-    await setState(initialState);
-
-    console.log("afterstate", state);
-  };
-
   // const takePhoto = async () => {
   //   requestPermission();
   //   console.log(permission);
@@ -144,11 +108,40 @@ export const RegistrationScreen = ({ navigation }) => {
       console.log("result if canceled", result);
       result.assets.map((r) => {
         console.log(r.uri);
-        console.log("photo state before", photo);
+
         setPhoto(r.uri);
-        console.log("photo state after", photo);
       });
     }
+  };
+
+  const uploadFoto = async () => {
+    try {
+      const response = await fetch(photo);
+      const file = await response.blob();
+      const id = Date.now().toString();
+      const storageRef = ref(storage, `avatarImage/${id}`);
+      await uploadBytes(storageRef, file);
+      const downloadFoto = await getDownloadURL(storageRef);
+      console.log("downloadFoto", downloadFoto);
+
+      // setState((prevState) => ({
+      //   ...prevState,
+      //   avatar: downloadFoto,
+      // }));
+
+      return downloadFoto;
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
+  const onLogin = async () => {
+    const upload = await uploadFoto();
+    console.log("upload", upload);
+
+    await dispatch(authOnRegister(state, upload));
+
+    await setState(initialState);
   };
 
   return (

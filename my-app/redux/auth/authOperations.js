@@ -19,16 +19,16 @@ import { async } from "@firebase/util";
 const auth = getAuth();
 
 export const authOnRegister =
-  ({ password, login, email, avatar }) =>
+  ({ password, login, email, avatar }, upload) =>
   async (dispatch) => {
     try {
-      console.log("Dispatch register", email, password, login);
+      console.log("Dispatch register", email, password, login, upload);
       await createUserWithEmailAndPassword(auth, email, password);
       const user = await auth.currentUser;
 
       await updateProfile(auth.currentUser, {
         displayName: login,
-        photoURL: avatar,
+        photoURL: upload,
       });
       const newuser = await auth.currentUser;
       console.log("user", user);
@@ -36,7 +36,12 @@ export const authOnRegister =
       const { uid, displayName } = await auth.currentUser;
 
       dispatch(
-        updateUserId({ userId: uid, nickname: displayName, email, avatar })
+        updateUserId({
+          userId: uid,
+          nickname: displayName,
+          email,
+          avatar: upload,
+        })
       );
     } catch (error) {
       console.log(error);
